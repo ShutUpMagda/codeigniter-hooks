@@ -1,2 +1,2 @@
 # codeigniter-hooks
-Hooks úteis para aplicações que usam CodeIgniter
+Scripts PHP úteis para aplicações que usam CodeIgniter
