@@ -20,7 +20,6 @@
 return [
   'invalid_user' => 'You provided an invalid user! Please, try again.',
   'invalid_password' => 'Invalid password! Please, try again.',
-  'already_registered_cpf' => 'This CPF is already registered! Try to recover your password.',
   'already_registered_email' => 'This email is already registered! Try to recover your password.',
   'failed_create_user' => 'Failed to create user!',
   'g-recaptcha-response' => 'Failed to validate Google reCAPTCHA!. Please, try again!'
