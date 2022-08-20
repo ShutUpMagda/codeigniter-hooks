@@ -24,11 +24,22 @@ namespace App\Libraries;
  */
 class Recaptcha
 {
-    public $field = 'g-recaptcha-response';
+    private $req;
+    private $secret = 'your-private-key';
     public $sitekey = 'your-public-key';
-    public $secret = 'your-private-key';
+    public $field = 'g-recaptcha-response';
     public $uri = 'https://www.google.com/recaptcha/api/siteverify';
     public $api = 'https://www.google.com/recaptcha/api.js';
+    public $curl;
+    public $g_recaptcha_response;
+    public $response;
+    public $remoteip;
+
+    function __construct()
+    {
+        $this->curl = curl_init();
+        $this->req = service('request');
+    }
 
     /**
      * Returns a string with the appropriate fields for Google reCAPTCHA;
@@ -54,23 +65,24 @@ class Recaptcha
      */
     function recaptcha_validate(string $str, string &$error = null): bool
     {
-        $req = service('request');
-        if ($req->getPost('g-recaptcha-response')) {
-            $captcha_data = $req->getPost('g-recaptcha-response');
-            $recaptcha_secret = $this->secret;
-            $recaptcha_uri = $this->uri;
-            $remote_addr = $req->getServer('REMOTE_ADDR');
-            $response = json_decode(
-                file_get_contents(
-                    "{$recaptcha_uri}?secret=" .
-                        $recaptcha_secret .
-                        "&response=" .
-                        $captcha_data .
-                        "&remoteip=" .
-                        $remote_addr
-                )
+        if ($this->req->getPost('g-recaptcha-response')) {
+            $this->g_recaptcha_response = $this->req->getPost('g-recaptcha-response');
+            $this->remoteip = $this->req->getServer('REMOTE_ADDR');
+            curl_setopt_array(
+                $this->curl, [
+                    CURLOPT_URL => $this->uri,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_CUSTOMREQUEST => 'POST',
+                    CURLOPT_POSTFIELDS => [
+                        'secret' => $this->secret,
+                        'response' => $this->g_recaptcha_response,
+                        'remoteip' => $this->remoteip
+                    ]
+                ]
             );
-            if ($response->success === TRUE) {
+            $this->response = json_decode(curl_exec($this->curl));
+            curl_close($this->curl);
+            if ($this->response->success === TRUE) {
                 return TRUE;
             }
         }
